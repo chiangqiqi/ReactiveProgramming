@@ -14,7 +14,15 @@ abstract class QuickCheckHeap extends Properties("Heap") with IntHeap {
     findMin(h) == a
   }
 
-  lazy val genHeap: Gen[H] = ???
+  property("min2") = forAll { (a: Int, b: Int) =>
+    val h = insert(insert(a, empty), b)
+    findMin(h) == List(a, b).min
+  }
+
+  lazy val genHeap: Gen[H] =  for {
+    v <- arbitrary[Int]
+    m <- oneOf(const(Heap.empty[Int]), genHeap)
+  } yield m.insert(v)
 
   implicit lazy val arbHeap: Arbitrary[H] = Arbitrary(genHeap)
 
