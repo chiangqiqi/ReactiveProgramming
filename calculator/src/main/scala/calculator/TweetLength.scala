@@ -6,12 +6,21 @@ object TweetLength {
   def tweetRemainingCharsCount(tweetText: Signal[String]): Signal[Int] = {
     Signal {
       val str = tweetText()
-      MaxTweetLength - str.size
+      MaxTweetLength - tweetLength(str)
     }
   }
 
   def colorForRemainingCharsCount(remainingCharsCount: Signal[Int]): Signal[String] = {
-    ???
+    Signal {
+      val value = remainingCharsCount()
+      if (value >= 15 ) {
+        "green"
+      } else if (value >= 0) {
+        "orange"
+      } else {
+        "red"
+      }
+    }
   }
 
   /** Computes the length of a tweet, given its text string.
