@@ -35,24 +35,13 @@ package object nodescala {
      *  If any of the futures `fs` fails, the resulting future also fails.
      */
     def all[T](fs: List[Future[T]]): Future[List[T]] = {
-      def futureToFutureTry[T](f: Future[T]): Future[Try[T]] =
-        f.map(Success(_)).recover {case x => Failure(x)}
-      val listOfFutureTrys = fs.map(futureToFutureTry(_))
-
-      val futureListOfTrys = Future.sequence(listOfFutureTrys)
-
-      futureListOfTrys.map(_.collect{ case Success(x) => x})
-
-      futureListOfTrys.map(_.forall(_.isSuccess))
-      // val returnFuture = Future {
-      //   if (listOfFutureTrys.forall(_.isSuccess)) {
-      //     listOfFutureTrys.map {case Success(x) => x}
-      //   } else {
-      //     throw new Exception("not all valid")
-      //   }
-      // }
-
+      fs.foldRight(Future(Nil:List[T]))((f, fs2) =>
+        for {
+          x <- f
+          xs <- fs2
+        } yield (x::xs))
     }
+
     /** Given a list of futures `fs`, returns the future holding the value of the future from `fs` that completed first.
      *  If the first completing future in `fs` fails, then the result is failed as well.
      *
