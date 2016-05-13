@@ -59,7 +59,13 @@ package object nodescala {
 
     /** Returns a future with a unit value that is completed after time `t`.
      */
-    def delay(t: Duration): Future[Unit] = ???
+    def delay(t: Duration): Future[Unit] = {
+      blocking {
+        Future{
+          Thread.sleep(t toMillis)
+        }
+      }
+    }
 
     /** Completes this future with user input.
      */
@@ -87,7 +93,13 @@ package object nodescala {
      *  However, it is also non-deterministic -- it may throw or return a value
      *  depending on the current state of the `Future`.
      */
-    def now: T = ???
+    def now: T = {
+      if (f.isCompleted) {
+        Await.result(f, 1 seconds)
+      } else {
+        throw new NoSuchElementException("no value")
+      }
+    }
 
     /** Continues the computation of this future by taking the current future
      *  and mapping it into another future.
