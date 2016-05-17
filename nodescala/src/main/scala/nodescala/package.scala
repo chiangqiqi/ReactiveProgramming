@@ -77,7 +77,11 @@ package object nodescala {
 
     /** Creates a cancellable context for an execution and runs it.
      */
-    def run()(f: CancellationToken => Future[Unit]): Subscription = ???
+    def run()(f: CancellationToken => Future[Unit]): Subscription = {
+      val cts = CancellationTokenSource()
+      f(cts.cancellationToken)
+      cts
+    }
 
   }
 
@@ -95,7 +99,7 @@ package object nodescala {
      */
     def now: T = {
       if (f.isCompleted) {
-        Await.result(f, 1 seconds)
+        Await.result(f, 0 seconds)
       } else {
         throw new NoSuchElementException("no value")
       }
@@ -107,7 +111,16 @@ package object nodescala {
      *  The function `cont` is called only after the current future completes.
      *  The resulting future contains a value returned by `cont`.
      */
-    def continueWith[S](cont: Future[T] => S): Future[S] = ???
+    def continueWith[S](cont: Future[T] => S): Future[S] = {
+      val p = Promise[S]()
+
+      f.onComplete {
+        case Failure(f) => p.complete(Failure(f))
+        case Success(v) => p.completeWith(Future(cont(f)))
+      }
+
+      return p.future
+    }
 
     /** Continues the computation of this future by taking the result
      *  of the current future and mapping it into another future.
@@ -115,7 +128,13 @@ package object nodescala {
      *  The function `cont` is called only after the current future completes.
      *  The resulting future contains a value returned by `cont`.
      */
-    def continue[S](cont: Try[T] => S): Future[S] = ???
+    def continue[S](cont: Try[T] => S): Future[S] = {
+      val p = Promise[S]()
+      f onComplete {
+        t => p tryComplete Try(cont(t))
+      }
+      p.future
+    }
 
   }
 
