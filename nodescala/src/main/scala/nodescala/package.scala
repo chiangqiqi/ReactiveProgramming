@@ -70,9 +70,7 @@ package object nodescala {
     /** Completes this future with user input.
      */
     def userInput(message: String): Future[String] = Future {
-      blocking {
-        StdIn.readLine(message)
-      }
+        readLine(message)
     }
 
     /** Creates a cancellable context for an execution and runs it.
