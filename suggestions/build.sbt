@@ -6,6 +6,21 @@ scalacOptions ++= Seq("-deprecation", "-feature")
 
 (fork in Test) := false
 
+libraryDependencies += "org.scala-lang" % "scala-swing" % "2.10.6"
+
+libraryDependencies ++= Seq(
+  "io.reactivex" %% "rxscala" % "0.23.0",
+  "io.reactivex" % "rxswing" % "0.21.0", // for Swing Scheduler in suggestions
+  "org.json4s" %% "json4s-native" % "3.2.11",
+  "org.scala-lang.modules" %% "scala-swing" % "1.0.1",
+  "net.databinder.dispatch" %% "dispatch-core" % "0.11.0",
+  "org.scala-lang" % "scala-reflect" % scalaVersion.value,
+  "org.slf4j" % "slf4j-api" % "1.7.5",
+  "org.slf4j" % "slf4j-simple" % "1.7.5",
+  "com.squareup.retrofit" % "retrofit" % "1.0.0",
+  "org.scala-lang.modules" %% "scala-async" % "0.9.2"
+)
+
 projectDetailsMap := {
   val currentCourseId = "reactive-002"
 
@@ -60,7 +75,8 @@ projectDetailsMap := {
                     assignmentPartId = "rLLdQLGN",
                     maxScore = 10d,
                     styleScoreRatio = 0.0,
-                    courseId=currentCourseId),
+                    courseId=currentCourseId,
+                    dependencies = depsNode),
     "actorbintree" -> ProjectDetails(
                     packageName = "actorbintree",
                     assignmentPartId = "VxIlIKoW",
