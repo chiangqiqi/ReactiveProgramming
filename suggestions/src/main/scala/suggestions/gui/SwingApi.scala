@@ -12,6 +12,7 @@ import scala.swing.event.Event
 import rx.lang.scala.{Observable, Observer}
 import java.awt.event.ActionListener
 import rx.lang.scala.{Subscription, Subscriber}
+import scala.language.implicitConversions
 
 /** Basic facilities for dealing with Swing-like components.
 *
@@ -56,7 +57,7 @@ trait SwingApi {
     def textValues: Observable[String] = Observable.create(
       (observer: Observer[String]) => {
         val listener = new ActionListener() {
-          def actionPerformed(event: Event) {
+          override def actionPerformed(event: Event) {
             case ValueChanged(tf) => observer.onNext(tf.text)
             case _ => ()
           }
@@ -71,25 +72,26 @@ trait SwingApi {
 
   implicit class ButtonOps(button: Button) {
 
+    implicit def makeAction(action: (Event) => Unit) =
+      new ActionListener {
+        override def actionPerformed(event: Event): Unit = { action(event) }
+      }
+
     /** Returns a stream of button clicks.
      *
      * @param field the button
      * @return an observable with a stream of buttons that have been clicked
      */
-    def clicks: Observable[Button] =
-      Observable.create(
-        (observer: Observer[Button]) => {
-          val listener = new ActionListener() {
-            def actionPerformed(event: Event) {
-              case ButtonClicked(button) => observer.onNext(button)
-              case _ => ()
-            }
-          }
-
-          new Subscription {
-            override def unsubscribe: Unit = observer.onCompleted
-          }
+    def clicks = Observable[Button](
+      subscriber => {
+        listenTo(button)
+        reactions += {
+          case ButtonClicked(bt) => subscriber.onNext(bt)
         }
-      )
+
+        if (!subscriber.isUnsubscribed) subscriber.onCompleted()
+      }
+    )
+
   }
 }
