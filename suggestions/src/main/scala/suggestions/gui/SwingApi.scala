@@ -9,7 +9,9 @@ import scala.concurrent.ExecutionContext.Implicits.global
 import scala.util.{ Try, Success, Failure }
 import scala.swing.Reactions.Reaction
 import scala.swing.event.Event
-import rx.lang.scala.{Observable, Observer, Subscribe, Subscription}
+import rx.lang.scala.{Observable, Observer}
+import java.awt.event.ActionListener
+import rx.lang.scala.{Subscription, Subscriber}
 
 /** Basic facilities for dealing with Swing-like components.
 *
@@ -54,7 +56,7 @@ trait SwingApi {
     def textValues: Observable[String] = Observable.create(
       (observer: Observer[String]) => {
         val listener = new ActionListener() {
-          def actionPerformed(event: ValueChanged) {
+          def actionPerformed(event: Event) {
             case ValueChanged(tf) => observer.onNext(tf.text)
             case _ => ()
           }
@@ -78,7 +80,7 @@ trait SwingApi {
       Observable.create(
         (observer: Observer[Button]) => {
           val listener = new ActionListener() {
-            def actionPerformed(event: ButtonClicked) {
+            def actionPerformed(event: Event) {
               case ButtonClicked(button) => observer.onNext(button)
               case _ => ()
             }
