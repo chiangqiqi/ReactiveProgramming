@@ -40,6 +40,7 @@ trait SwingApi {
     def text: String
     def subscribe(r: Reaction): Unit
     def unsubscribe(r: Reaction): Unit
+    var reactions : Reaction
   }
 
   type Button <: {
@@ -54,20 +55,13 @@ trait SwingApi {
       * @param field the text field
       * @return an observable with a stream of text field updates
       */
-    def textValues: Observable[String] = Observable.create(
-      (observer: Observer[String]) => {
-        val listener = new ActionListener() {
-          override def actionPerformed(event: Event) {
-            case ValueChanged(tf) => observer.onNext(tf.text)
-            case _ => ()
-          }
+    def textValues: Observable[String] = Observable.create[String] { obs =>
+        field.reactions += {
+          case ValueChanged(_) => obs.onNext(field.text)
         }
 
-        new Subscription {
-          override def unsubscribe: Unit = observer.onCompleted
-        }
-      }
-    )
+        Subscription()
+      )
   }
 
   implicit class ButtonOps(button: Button) {
