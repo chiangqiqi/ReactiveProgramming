@@ -13,3 +13,11 @@ cousera反应式编程作业
 ## nodescala
 `Future[List]` to `List[Future]` 的转换使用到了 `for loop`, 这个 `for loop` 是基于
 `Future` 这种类型的， 所以 `yield` 之后会重新得到一个 `Future`。
+
+## 笔记
+
+### akka actors
+Actor 是
+- An object with identity
+- 有一个行为
+- 只使用异步的方式通讯
