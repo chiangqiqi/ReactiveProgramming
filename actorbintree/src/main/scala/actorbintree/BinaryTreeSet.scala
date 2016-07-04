@@ -66,14 +66,33 @@ class BinaryTreeSet extends Actor {
 
   // optional
   /** Accepts `Operation` and `GC` messages. */
-  val normal: Receive = { case _ => ??? }
+  val normal: Receive = {
+    case x:Operation => root ! x
+
+    case GC => {
+      val newRoot = createRoot
+      root ! CopyTo(newRoot)
+      context.become(garbageCollecting(newRoot))
+    }
+  }
 
   // optional
   /** Handles messages while garbage collection is performed.
     * `newRoot` is the root of the new binary tree where we want to copy
     * all non-removed elements into.
     */
-  def garbageCollecting(newRoot: ActorRef): Receive = ???
+  def garbageCollecting(newRoot: ActorRef): Receive = {
+    case operation: Operation => pendingQueue.enqueue(operation)
+
+    case CopyFinished => {
+      root ! PoisonPill
+      val newRoot = createRoot
+      root = newRoot
+      pendingQueue.map(root ! _)
+      pendingQueue = Queue.empty
+      context.become(normal)
+    }
+  }
 
 }
 
